@@ -6,7 +6,13 @@ import matplotlib.pyplot as plt
 from relaxed_gconv import TimeRevNet
 from utils import Dataset2DTime, train_model_batch
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    device = "cuda"
+elif torch.backends.mps.is_available():
+    device = "mps"
+else:
+    device = "cpu"
 
 
 def pendulum_simulator(
@@ -132,7 +138,6 @@ for seed in range(10):
         hidden_dim=hidden_dim,
         num_filter_basis=num_filter_basis,
     ).to(device)
-    breakpoint()
     undamped_best_model = train_model_batch(
         undamped_model,
         undamped_train_loader,
@@ -140,6 +145,7 @@ for seed in range(10):
         num_epoch,
         learning_rate,
         decay_rate,
+        device,
     )
     undamped_weights = (
         torch.stack([undamped_best_model.model[i].relaxed_weights for i in range(3)])
@@ -176,6 +182,7 @@ for seed in range(10):
         num_epoch,
         learning_rate,
         decay_rate,
+        device,
     )
     damped_weights = (
         torch.stack([damped_best_model.model[i].relaxed_weights for i in range(3)])
